@@ -1,8 +1,13 @@
 import pyshark
+import os
 
 INTERFACE = 'wlp3s0'
 BURST_SECONDS = 1
 READ_SECONDS = 2
+
+IDENTIFIER_KEYS = ['dst', 'src_port', 'dst_port']
+public_ip = os.popen('curl -s ifconfig.me').readline()
+packet_statistics = {}
 
 
 def check_burst(cap, start_index=0):
@@ -13,6 +18,28 @@ def check_burst(cap, start_index=0):
     return -1
 
 
+# Extract necessary information for calculating/printing statistics
+def packet_extract(pkt):
+    timestamp = pkt.sniff_time
+    src = str(pkt.ip.src)
+    outbound = True if src == public_ip else False
+    dst = str(pkt.ip.dst)
+    src_port = str(pkt.layers[2].srcport)
+    dst_port = str(pkt.layers[2].dstport)
+    protocol = str(pkt.layers[-1].layer_name)
+    length = pkt.capture_length
+    return {'timestamp': timestamp, 'src': src, 'dst': dst, 'src_port': src_port, 'dst_port': dst_port,
+            'protocol': protocol, 'outbound': outbound, 'length': length}
+
+
+def packet_serialize(pkt_dict):
+    val = ''
+    for entry in IDENTIFIER_KEYS:
+        val += pkt_dict[entry]
+
+    return val
+
+
 def print_analysis(pkts):
     for pkt in pkts:
         timestamp = pkt.sniff_time
@@ -21,7 +48,6 @@ def print_analysis(pkts):
         src_port = pkt.layers[2].srcport
         dst_port = pkt.layers[2].dstport
         protocol = pkt.layers[-1].layer_name
-
         print(str(timestamp) + " " + src + " " + dst + " " + src_port + " " + dst_port + " " + protocol)
 
 
@@ -43,6 +69,7 @@ def run(interface="eth1"):
 
         # do analysis with current burst...
         print_analysis(current_burst)
+
 
 
 run(interface=INTERFACE)
