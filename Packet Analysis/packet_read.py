@@ -2,9 +2,9 @@ import pyshark
 import os
 import sys
 
-#INTERFACE = 'wlp3s0'
+INTERFACE = 'wlp3s0'
 BURST_SECONDS = 1
-READ_SECONDS = 2
+READ_SECONDS = 1
 
 IDENTIFIER_KEYS = ['src_port', 'dst_port', 'protocol']
 public_ip = os.popen('curl -s ifconfig.me').readline()
@@ -27,7 +27,6 @@ def packet_extract(pkt):
     dst = str(pkt.ip.dst)
     src_port = str(pkt.layers[2].srcport)
     dst_port = str(pkt.layers[2].dstport)
-
 
     protocol = str(pkt.layers[2].layer_name)
     length = int(pkt.length)
@@ -59,7 +58,7 @@ def print_analysis(pkt, index):
 
 
 def run(interface="eth1"):
-    capture = pyshark.LiveCapture(interface=INTERFACE, display_filter='ip and tcp or udp')
+    capture = pyshark.LiveCapture(interface=interface, display_filter='ip and tcp or udp')
     pkt_index = 0
     current_burst = []
 
