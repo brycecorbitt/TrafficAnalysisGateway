@@ -5,7 +5,7 @@ INTERFACE = 'enp0s31f6'
 BURST_SECONDS = 1
 READ_SECONDS = 2
 
-IDENTIFIER_KEYS = ['dst', 'src_port', 'dst_port', 'protocol']
+IDENTIFIER_KEYS = ['src_port', 'dst_port', 'protocol']
 public_ip = os.popen('curl -s ifconfig.me').readline()
 pkt_stats= {}
 
@@ -26,6 +26,8 @@ def packet_extract(pkt):
     dst = str(pkt.ip.dst)
     src_port = str(pkt.layers[2].srcport)
     dst_port = str(pkt.layers[2].dstport)
+
+
     protocol = str(pkt.layers[2].layer_name)
     length = int(pkt.length)
     return {'timestamp': timestamp, 'src': src, 'dst': dst, 'src_port': src_port, 'dst_port': dst_port,
@@ -34,13 +36,23 @@ def packet_extract(pkt):
 
 def packet_serialize(pkt_dict):
     val = ''
-    for entry in IDENTIFIER_KEYS:
-        val += pkt_dict[entry]
+    if not pkt_dict['outbound']:
+        val += pkt_dict['src']
+        val += pkt_dict['dst_port']
+        val += pkt_dict['src_port']
+    else:
+        val += pkt_dict['dst']
+        val += pkt_dict['src_port']
+        val += pkt_dict['dst_port']
+
+    val += pkt_dict['protocol']
+
 
     return val
 
 
 def print_analysis(pkt, index):
+
     print(pkt['timestamp'] + " " + pkt['src'] + " " + pkt['dst'] + " " + pkt['src_port'] + " " + pkt['dst_port'] + " "
           + pkt['protocol'] + " " + str(pkt_stats[index]['pkts_sent']) + " " + str(pkt_stats[index]['pkts_received']) +
           " " + str(pkt_stats[index]['bytes_sent']) + " " + str(pkt_stats[index]['bytes_received']))
