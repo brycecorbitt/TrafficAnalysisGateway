@@ -1,13 +1,13 @@
 import pyshark
 import os
 
-INTERFACE = 'wlp3s0'
+INTERFACE = 'enp0s31f6'
 BURST_SECONDS = 1
 READ_SECONDS = 2
 
-IDENTIFIER_KEYS = ['dst', 'src_port', 'dst_port']
+IDENTIFIER_KEYS = ['dst', 'src_port', 'dst_port', 'protocol']
 public_ip = os.popen('curl -s ifconfig.me').readline()
-packet_statistics = {}
+pkt_stats= {}
 
 
 def check_burst(cap, start_index=0):
@@ -20,14 +20,14 @@ def check_burst(cap, start_index=0):
 
 # Extract necessary information for calculating/printing statistics
 def packet_extract(pkt):
-    timestamp = pkt.sniff_time
+    timestamp = str(pkt.sniff_time)
     src = str(pkt.ip.src)
-    outbound = True if src == public_ip else False
+    outbound = True if str(src) == str(public_ip) else False
     dst = str(pkt.ip.dst)
     src_port = str(pkt.layers[2].srcport)
     dst_port = str(pkt.layers[2].dstport)
-    protocol = str(pkt.layers[-1].layer_name)
-    length = pkt.capture_length
+    protocol = str(pkt.layers[2].layer_name)
+    length = int(pkt.length)
     return {'timestamp': timestamp, 'src': src, 'dst': dst, 'src_port': src_port, 'dst_port': dst_port,
             'protocol': protocol, 'outbound': outbound, 'length': length}
 
@@ -40,15 +40,12 @@ def packet_serialize(pkt_dict):
     return val
 
 
-def print_analysis(pkts):
-    for pkt in pkts:
-        timestamp = pkt.sniff_time
-        src = pkt.ip.src
-        dst = pkt.ip.dst
-        src_port = pkt.layers[2].srcport
-        dst_port = pkt.layers[2].dstport
-        protocol = pkt.layers[-1].layer_name
-        print(str(timestamp) + " " + src + " " + dst + " " + src_port + " " + dst_port + " " + protocol)
+def print_analysis(pkt, index):
+    print(pkt['timestamp'] + " " + pkt['src'] + " " + pkt['dst'] + " " + pkt['src_port'] + " " + pkt['dst_port'] + " "
+          + pkt['protocol'] + " " + str(pkt_stats[index]['pkts_sent']) + " " + str(pkt_stats[index]['pkts_received']) +
+          " " + str(pkt_stats[index]['bytes_sent']) + " " + str(pkt_stats[index]['bytes_received']))
+
+
 
 
 def run(interface="eth1"):
@@ -65,12 +62,25 @@ def run(interface="eth1"):
 
         end_burst = check_burst(capture, pkt_index) + 1
         current_burst = capture[pkt_index:end_burst]
+        capture.clear() # performed to prevent memory overflow
         pkt_index = end_burst
 
         # do analysis with current burst...
-        print_analysis(current_burst)
+        entries = pkt_stats.keys()
+        for pkt in current_burst:
+            pkt_dict = packet_extract(pkt)
+            index = packet_serialize(pkt_dict)
+            if index not in entries:
+                pkt_stats[index] = {'pkts_sent': 0, 'pkts_received': 0, 'bytes_sent': 0, 'bytes_received': 0}
 
+            if pkt_dict['outbound']:
+                pkt_stats[index]['pkts_sent'] += 1
+                pkt_stats[index]['bytes_sent'] += pkt_dict['length']
+            else:
+                pkt_stats[index]['pkts_received'] += 1
+                pkt_stats[index]['bytes_received'] += pkt_dict['length']
 
+            print_analysis(pkt_dict, index)
 
 run(interface=INTERFACE)
 
