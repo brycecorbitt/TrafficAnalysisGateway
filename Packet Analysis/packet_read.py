@@ -1,7 +1,8 @@
 import pyshark
 import os
+import sys
 
-INTERFACE = 'enp0s31f6'
+#INTERFACE = 'wlp3s0'
 BURST_SECONDS = 1
 READ_SECONDS = 2
 
@@ -47,7 +48,6 @@ def packet_serialize(pkt_dict):
 
     val += pkt_dict['protocol']
 
-
     return val
 
 
@@ -56,8 +56,6 @@ def print_analysis(pkt, index):
     print(pkt['timestamp'] + " " + pkt['src'] + " " + pkt['dst'] + " " + pkt['src_port'] + " " + pkt['dst_port'] + " "
           + pkt['protocol'] + " " + str(pkt_stats[index]['pkts_sent']) + " " + str(pkt_stats[index]['pkts_received']) +
           " " + str(pkt_stats[index]['bytes_sent']) + " " + str(pkt_stats[index]['bytes_received']))
-
-
 
 
 def run(interface="eth1"):
@@ -94,7 +92,13 @@ def run(interface="eth1"):
 
             print_analysis(pkt_dict, index)
 
-run(interface=INTERFACE)
+
+if __name__ == '__main__':
+    try:
+        run()
+    except KeyboardInterrupt:
+        sys.exit(0)
+
 
 
 
