@@ -1,10 +1,9 @@
 import pyshark
 import os
-from collections import defaultdict
-
-INTERFACE = 'enp0s31f6'
+import sys
+INTERFACE = 'wlp3s0'
 BURST_SECONDS = 1
-READ_SECONDS = 2
+READ_SECONDS = 1
 
 IDENTIFIER_KEYS = ['src_port', 'dst_port', 'protocol']
 public_ip = os.popen('curl -s ifconfig.me').readline()
@@ -36,7 +35,6 @@ def packet_extract(pkt):
     src_port = str(pkt.layers[2].srcport)
     dst_port = str(pkt.layers[2].dstport)
 
-
     protocol = str(pkt.layers[2].layer_name)
     length = int(pkt.length)
     return {'timestamp': timestamp, 'src': src, 'dst': dst, 'src_port': src_port, 'dst_port': dst_port,
@@ -56,12 +54,10 @@ def packet_serialize(pkt_dict):
 
     val += pkt_dict['protocol']
 
-
     return val
 
 
 def get_analysis(pkt, index):
-
     return str(pkt['timestamp'] + " " + pkt['src'] + " " + pkt['dst'] + " " + pkt['src_port'] + " " + pkt['dst_port'] +
                " " + pkt['protocol'] + " " + str(pkt_stats[index]['pkts_sent']) + " " +
                str(pkt_stats[index]['pkts_received']) + " " + str(pkt_stats[index]['bytes_sent']) + " " +
@@ -95,7 +91,13 @@ def run(interface="eth1"):
             burst_strings = []
 
 
-run(interface=INTERFACE)
+
+if __name__ == '__main__':
+    try:
+        run()
+    except KeyboardInterrupt:
+        sys.exit(0)
+
 
 
 
