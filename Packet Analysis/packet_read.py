@@ -66,7 +66,7 @@ def get_analysis(pkt, index):
 
 def run(interface="eth1"):
     global burst_strings
-    capture = pyshark.LiveCapture(interface=INTERFACE, display_filter='ip and tcp or udp')
+    capture = pyshark.LiveCapture(interface=interface, display_filter='ip and tcp or udp')
 
     for pkt in capture.sniff_continuously():
         entries = pkt_stats.keys()
@@ -85,7 +85,7 @@ def run(interface="eth1"):
         burst_strings.append(get_analysis(pkt_dict,index))
 
         if check_burst(pkt):
-            print("BURST!!!!\n")
+            # print("BURST!!!!\n")
             for line in burst_strings:
                 print(line)
             burst_strings = []
