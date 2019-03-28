@@ -93,7 +93,7 @@ def run(interface="eth1"):
 
 if __name__ == '__main__':
     try:
-        run(INTERFACE)
+        run()
     except KeyboardInterrupt:
         for line in burst_strings:
             print(line)
