@@ -1,11 +1,11 @@
 import pyshark
 import os
-import sys
 INTERFACE = 'wlp3s0'
 BURST_SECONDS = 1
 READ_SECONDS = 1
 
 IDENTIFIER_KEYS = ['src_port', 'dst_port', 'protocol']
+null_fds = [os.open(os.devnull, os.O_RDWR) for x in range(2)]
 public_ip = os.popen('curl -s ifconfig.me').readline()
 pkt_stats = dict()
 burst_strings = []
@@ -91,12 +91,17 @@ def run(interface="eth1"):
             burst_strings = []
 
 
-
 if __name__ == '__main__':
     try:
-        run()
+        run(INTERFACE)
     except KeyboardInterrupt:
-        sys.exit(0)
+        for line in burst_strings:
+            print(line)
+
+        # Used to suppress errors on KeyboardInterrupt
+        os.dup2(null_fds[0], 1)
+        os.dup2(null_fds[1], 2)
+        exit(0)
 
 
 
