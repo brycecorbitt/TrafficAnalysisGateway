@@ -1,0 +1,8 @@
+opt
+home
+/usr/local/etc/ssh
+/etc/shadow
+/etc/udhcpd.conf
+/opt/eth1.sh
+/usr/local/lib/python2.7
+/usr/local/lib/python3.6
