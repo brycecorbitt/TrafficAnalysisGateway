@@ -1,10 +1,11 @@
 import pyshark
 import os
+import ip_tool
 BURST_SECONDS = 1
 
 IDENTIFIER_KEYS = ['src_port', 'dst_port', 'protocol']
 null_fds = [os.open(os.devnull, os.O_RDWR) for x in range(2)]
-public_ip = os.popen('curl -s ifconfig.me').readline()
+local_ip = ip_tool.get_ip_address
 pkt_stats = dict()
 burst_strings = []
 last_pkt = None
@@ -29,7 +30,7 @@ def check_burst(pkt):
 def packet_extract(pkt):
     timestamp = str(pkt.sniff_time)
     src = str(pkt.ip.src)
-    outbound = True if str(src) == str(public_ip) else False
+    outbound = True if str(src) == str(local_ip) else False
     dst = str(pkt.ip.dst)
     src_port = str(pkt.layers[2].srcport)
     dst_port = str(pkt.layers[2].dstport)
