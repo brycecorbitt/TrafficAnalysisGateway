@@ -30,7 +30,7 @@ def check_burst(pkt):
 def packet_extract(pkt):
     timestamp = str(pkt.sniff_time)
     src = str(pkt.ip.src)
-    outbound = True if str(src) == str(local_ip) else False
+    outbound = True if str(src) == str(local_ip) or '192.168.12' in str(src) else False
     dst = str(pkt.ip.dst)
     src_port = str(pkt.layers[2].srcport)
     dst_port = str(pkt.layers[2].dstport)
