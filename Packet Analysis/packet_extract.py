@@ -13,8 +13,6 @@ Explanation of display filter:
 DISPLAY_FILTER = 'ip and not arp and !(udp.port == 53 or udp.port == 5353 or udp.port == 17) and !(eth.dst[0] & 1)'
 
 
-
-
 # Extract the time between packets (in seconds) with pkt_b following after pkt_a
 def pkt_delta(pkt_a, pkt_b):
     time_a = float(pkt_a.sniff_timestamp)
@@ -27,19 +25,18 @@ def extract_pkt(path):
     os.dup2(null_fds[0], 1)
     os.dup2(null_fds[1], 2)
     cap = pyshark.FileCapture(path, display_filter=DISPLAY_FILTER)
-    lengths = []
-    times = []
+    meta = []
     prev = cap[0]
     for pkt in cap:
         time_delta = pkt_delta(prev, pkt)
         length = int(pkt.length)
-        times.append(time_delta)
-        lengths.append(length)
+        meta.append([time_delta, length])
+
         prev = pkt
 
     os.dup2(save[0], 1)
     os.dup2(save[1], 2)
-    return np.concatenate(([times], [lengths]), axis=0)
+    return np.array(meta)
 
 
 # test = extract_pkt('../GatewayVM/recorded_traffic/browser.pcap')
