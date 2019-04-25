@@ -46,6 +46,7 @@ class Flow(object):
         self.bytes_sent = 0
         self.bytes_recvd = 0
         self.window_sizes = []
+        self.blocked = False
 
     def add_pkt(self, pkt_dict):
         self.lengths.append(pkt_dict['length'])

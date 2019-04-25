@@ -3,6 +3,7 @@
 import socket
 import fcntl
 import struct
+import subprocess
 
 
 def get_ip_address(interface=b'eth1'):
@@ -14,4 +15,6 @@ def get_ip_address(interface=b'eth1'):
     )[20:24])
 
 
-get_ip_address()
+def block_ip_address(ip):
+    subprocess.Popen(['sudo', '/usr/local/sbin/iptables', '-I', 'INPUT', '-s', str(ip), '-j', 'DROP'])
+
