@@ -93,7 +93,7 @@ def run(interface="eth1"):
             label = 'BLOCKED'
 
         flow_string += " " + label
-        if not flow_dict[flow_id].blocked and flow_dict[flow_id].pkts_recvd + flow_dict[flow_id].pkts_sent > 20:
+        if not flow_dict[flow_id].blocked and flow_dict[flow_id].pkts_recvd + flow_dict[flow_id].pkts_sent > 1:
             remote_ip = pkt_dict['src'] if pkt_dict['src'] != str(local_ip) else pkt_dict['dst']
             ip_tool.block_ip_address(remote_ip)
             flow_dict[flow_id].blocked = True
